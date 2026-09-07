@@ -413,84 +413,70 @@
   const autoMacroBtn = document.getElementById('autoMacroBtn');
   const autoProgress = document.getElementById('autoProgress');
 
-  // ============================================================
-  // 🔥 IMAGE COMPRESSION - GUARANTEED TO WORK
-  // ============================================================
+  // ===== SIMPLE IMAGE COMPRESSION - ALWAYS WORKS =====
   function compressImage(dataUrl) {
-    return new Promise((resolve, reject) => {
-      try {
-        const img = new Image();
-        img.onload = function() {
-          try {
-            // Target size: max 600px
-            let width = img.width;
-            let height = img.height;
-            const maxSize = 600;
-            
-            if (width > maxSize || height > maxSize) {
-              if (width > height) {
-                height = Math.round(height * (maxSize / width));
-                width = maxSize;
-              } else {
-                width = Math.round(width * (maxSize / height));
-                height = maxSize;
-              }
-            }
-            
-            // Create canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            // Start compressing
-            let quality = 0.7;
-            let compressed = canvas.toDataURL('image/jpeg', quality);
-            
-            // Keep reducing until under 500KB
-            let attempts = 0;
-            while (compressed.length > 500 * 1024 && quality > 0.1 && attempts < 15) {
-              quality -= 0.05;
-              compressed = canvas.toDataURL('image/jpeg', quality);
-              attempts++;
-            }
-            
-            // If still too big, resize even smaller
-            if (compressed.length > 500 * 1024) {
-              const smallCanvas = document.createElement('canvas');
-              const smallSize = 400;
-              let w = canvas.width;
-              let h = canvas.height;
-              if (w > smallSize || h > smallSize) {
-                if (w > h) {
-                  h = Math.round(h * (smallSize / w));
-                  w = smallSize;
-                } else {
-                  w = Math.round(w * (smallSize / h));
-                  h = smallSize;
-                }
-              }
-              smallCanvas.width = w;
-              smallCanvas.height = h;
-              const smallCtx = smallCanvas.getContext('2d');
-              smallCtx.drawImage(canvas, 0, 0, w, h);
-              compressed = smallCanvas.toDataURL('image/jpeg', 0.3);
-            }
-            
-            console.log('✅ Compressed to:', Math.round(compressed.length / 1024), 'KB');
-            resolve(compressed);
-          } catch (err) {
-            reject(err);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = function() {
+        // Max size 500px
+        let width = img.width;
+        let height = img.height;
+        const maxSize = 500;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round(height * (maxSize / width));
+            width = maxSize;
+          } else {
+            width = Math.round(width * (maxSize / height));
+            height = maxSize;
           }
-        };
-        img.onerror = function() {
-          reject(new Error('Failed to load image'));
-        };
-        img.src = dataUrl;
-      } catch (err) {
-        reject(err);
-      }
+        }
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compress
+        let quality = 0.6;
+        let compressed = canvas.toDataURL('image/jpeg', quality);
+        
+        // Reduce quality until under 400KB
+        let attempts = 0;
+        while (compressed.length > 400 * 1024 && quality > 0.1 && attempts < 10) {
+          quality -= 0.05;
+          compressed = canvas.toDataURL('image/jpeg', quality);
+          attempts++;
+        }
+        
+        // If still too big, resize again
+        if (compressed.length > 400 * 1024) {
+          const smallCanvas = document.createElement('canvas');
+          const smallSize = 300;
+          let w = canvas.width;
+          let h = canvas.height;
+          if (w > smallSize || h > smallSize) {
+            if (w > h) {
+              h = Math.round(h * (smallSize / w));
+              w = smallSize;
+            } else {
+              w = Math.round(w * (smallSize / h));
+              h = smallSize;
+            }
+          }
+          smallCanvas.width = w;
+          smallCanvas.height = h;
+          const smallCtx = smallCanvas.getContext('2d');
+          smallCtx.drawImage(canvas, 0, 0, w, h);
+          compressed = smallCanvas.toDataURL('image/jpeg', 0.3);
+        }
+        
+        resolve(compressed);
+      };
+      img.src = dataUrl;
     });
   }
 
@@ -647,7 +633,6 @@
     });
     recipeListEl.innerHTML = html;
 
-    // Ratio control buttons
     document.querySelectorAll('.ratio-controls button').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -899,7 +884,7 @@
   autoMacroBtn.addEventListener('click', autoCalculateMacros);
 
   // ============================================================
-  // SAVE RECIPE - WITH GUARANTEED COMPRESSION
+  // SAVE RECIPE - SIMPLE & RELIABLE
   // ============================================================
 
   saveRecipeBtn.addEventListener('click', async function() {
@@ -907,32 +892,17 @@
     if (!name) { alert('Please enter a recipe name.'); return; }
     if (!tempIngredients.length) { alert('Add at least one ingredient.'); return; }
 
-    // Show status
     const originalText = this.textContent;
-    this.textContent = '⏳ Processing...';
+    this.textContent = '⏳ Saving...';
     this.disabled = true;
 
     try {
       let imageData = '';
-      const hasImage = photoPreview.src && photoPreview.classList.contains('show');
-      
-      if (hasImage) {
-        this.textContent = '⏳ Compressing image...';
-        console.log('📸 Starting compression...');
-        
-        // Compress the image
+      if (photoPreview.src && photoPreview.classList.contains('show')) {
+        this.textContent = '⏳ Compressing...';
         imageData = await compressImage(photoPreview.src);
-        console.log('✅ Compressed size:', Math.round(imageData.length / 1024), 'KB');
-        
-        // If still too large, emergency fallback
-        if (imageData.length > 800 * 1024) {
-          console.log('⚠️ Still large, emergency compression...');
-          imageData = await compressImage(photoPreview.src);
-          console.log('✅ Final size:', Math.round(imageData.length / 1024), 'KB');
-        }
       }
 
-      // Build recipe data
       const recipeData = {
         name: name,
         ingredients: [...tempIngredients],
@@ -949,9 +919,6 @@
         updatedAt: new Date().toISOString()
       };
 
-      this.textContent = '⏳ Saving...';
-
-      // Save to Firebase
       if (editingId) {
         await db.collection('recipes').doc(editingId).update(recipeData);
       } else {
@@ -959,13 +926,10 @@
         await db.collection('recipes').add(recipeData);
       }
       
-      console.log('✅ Recipe saved!');
       resetForm();
       activateTab('recipes');
-      
     } catch (error) {
-      console.error('❌ Error:', error);
-      alert('Error saving recipe: ' + error.message);
+      alert('Error: ' + error.message);
     } finally {
       this.textContent = originalText;
       this.disabled = false;
@@ -1009,19 +973,15 @@
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('📸 File selected:', Math.round(file.size / 1024), 'KB');
-      
       if (file.size > 3 * 1024 * 1024) {
         alert('⚠️ This image is ' + Math.round(file.size/1024/1024) + 'MB.\nIt will be compressed automatically.');
       }
-      
       const reader = new FileReader();
       reader.onload = (ev) => {
         photoPreview.src = ev.target.result;
         photoPreview.classList.add('show');
         photoUploadArea.classList.add('has-image');
         photoUploadText.textContent = 'Change photo';
-        console.log('📸 Preview loaded');
       };
       reader.readAsDataURL(file);
     }
@@ -1228,7 +1188,6 @@
     }
   });
 
-  // Settings overlay
   document.getElementById('settingsToggle').addEventListener('click', () => {
     document.getElementById('settingsOverlay').classList.add('open');
     document.getElementById('customColorPicker').value = settings.accentColor;
@@ -1263,8 +1222,8 @@
     if (el.dataset.font === settings.fontFamily) el.classList.add('active');
   });
 
-  console.log('⚔️ KBCB - Firebase version loaded!');
-  console.log('📸 Image compression is active!');
+  console.log('⚔️ KBCB - Firebase loaded!');
+  console.log('📸 Image compression active!');
 </script>
 </body>
 </html>
