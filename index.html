@@ -38,8 +38,60 @@
     .recipe-card:active { transform: scale(0.99); }
     .recipe-title { font-weight: 700; font-size: 1.2rem; margin: 0 0 4px 0; color: #eee; }
     .recipe-meta { font-size: 0.7rem; color: #666; margin-bottom: 6px; }
-    .recipe-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 14px; margin: 10px 0 12px 0; border: 1px solid #2f2f2f; background: #1a1a1a; }
-    .recipe-img-placeholder { width: 100%; height: 100px; background: #1a1a1a; border-radius: 14px; margin: 10px 0 12px 0; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.85rem; border: 1px dashed #333; }
+    
+    /* ===== PHOTO WRAPPER WITH RATIO CONTROLS ===== */
+    .recipe-img-wrapper {
+      width: 100%;
+      margin: 10px 0 12px 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #2f2f2f;
+      background: #1a1a1a;
+      position: relative;
+    }
+    .recipe-img-wrapper img {
+      width: 100%;
+      height: auto;
+      max-height: 350px;
+      display: block;
+      object-fit: cover;
+    }
+    .recipe-img-wrapper .ratio-controls {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.8);
+      padding: 4px 8px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .recipe-card:hover .ratio-controls,
+    .recipe-card:active .ratio-controls {
+      opacity: 1;
+    }
+    .recipe-img-wrapper .ratio-controls button {
+      background: none;
+      border: none;
+      color: #ccc;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .recipe-img-wrapper .ratio-controls button:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .recipe-img-wrapper .ratio-controls button.active {
+      background: rgba(245,166,35,0.3);
+      color: #f5a623;
+    }
+    
+    .recipe-img-placeholder { width: 100%; height: 150px; background: #1a1a1a; border-radius: 14px; margin: 10px 0 12px 0; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.85rem; border: 1px dashed #333; }
     .ingredient-list { list-style: none; padding: 0; margin: 8px 0 6px 0; display: flex; flex-wrap: wrap; gap: 6px 10px; }
     .ingredient-list li { background: #2a2a2a; padding: 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #bbb; border: 1px solid #333; }
     .macros-display { display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 4px; padding: 10px 14px; background: #1a1a1a; border-radius: 14px; font-size: 0.85rem; border: 1px solid #2a2a2a; }
@@ -307,7 +359,7 @@
 
 <script>
   // ============================================================
-  // 🔥 YOUR FIREBASE CONFIG - YOUR ACTUAL CONFIG!
+  // 🔥 YOUR FIREBASE CONFIG
   // ============================================================
   const firebaseConfig = {
     apiKey: "AIzaSyDjn72V5G3hyPoBlfzWm3N_PlgBowV8OXw",
@@ -362,7 +414,50 @@
   const autoMacroBtn = document.getElementById('autoMacroBtn');
   const autoProgress = document.getElementById('autoProgress');
 
-  // ===== FOOD DATABASE (for auto-calc) =====
+  // ============================================================
+  // 🔥 IMAGE COMPRESSION
+  // ============================================================
+  function compressImage(dataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = function() {
+        let width = img.width;
+        let height = img.height;
+        const maxSize = 600;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round(height * (maxSize / width));
+            width = maxSize;
+          } else {
+            width = Math.round(width * (maxSize / height));
+            height = maxSize;
+          }
+        }
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        let quality = 0.7;
+        let compressed = canvas.toDataURL('image/jpeg', quality);
+        let attempts = 0;
+        
+        while (compressed.length > 300 * 1024 && quality > 0.1 && attempts < 10) {
+          quality -= 0.05;
+          compressed = canvas.toDataURL('image/jpeg', quality);
+          attempts++;
+        }
+        
+        resolve(compressed);
+      };
+      img.src = dataUrl;
+    });
+  }
+
+  // ===== FOOD DATABASE =====
   const foodDB = {
     'chicken breast': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
     'chicken': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
@@ -416,7 +511,6 @@
   // 🔥 FIREBASE REAL-TIME LISTENERS
   // ============================================================
 
-  // Listen for recipe changes
   db.collection('recipes').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
     syncStatus.textContent = '🟢 online';
     syncStatus.className = 'sync-status online';
@@ -434,7 +528,6 @@
     syncStatus.className = 'sync-status offline';
   });
 
-  // Listen for shopping list changes
   db.collection('shopping').onSnapshot((snapshot) => {
     shoppingItems = [];
     snapshot.forEach((doc) => {
@@ -458,7 +551,17 @@
     recipes.forEach((r) => {
       let imgHtml = '';
       if (r.image && r.image.startsWith('data:image')) {
-        imgHtml = `<img src="${r.image}" class="recipe-img" alt="${r.name}">`;
+        const fitMode = r.imageFit || 'cover';
+        imgHtml = `
+          <div class="recipe-img-wrapper">
+            <img src="${r.image}" alt="${r.name}" style="object-fit: ${fitMode};">
+            <div class="ratio-controls">
+              <button class="${fitMode === 'cover' ? 'active' : ''}" data-id="${r.id}" data-fit="cover">📐</button>
+              <button class="${fitMode === 'contain' ? 'active' : ''}" data-id="${r.id}" data-fit="contain">📏</button>
+              <button class="${fitMode === 'auto' ? 'active' : ''}" data-id="${r.id}" data-fit="auto">🔄</button>
+            </div>
+          </div>
+        `;
       } else {
         imgHtml = `<div class="recipe-img-placeholder">📸 No photo</div>`;
       }
@@ -506,6 +609,25 @@
       `;
     });
     recipeListEl.innerHTML = html;
+
+    // Ratio control buttons
+    document.querySelectorAll('.ratio-controls button').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const fit = btn.dataset.fit;
+        const wrapper = btn.closest('.recipe-img-wrapper');
+        const img = wrapper.querySelector('img');
+        img.style.objectFit = fit;
+        wrapper.querySelectorAll('.ratio-controls button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        try {
+          await db.collection('recipes').doc(id).update({ imageFit: fit });
+        } catch (error) {
+          console.error('Error saving image fit:', error);
+        }
+      });
+    });
 
     document.querySelectorAll('.recipe-card').forEach(card => {
       card.addEventListener('click', (e) => {
@@ -740,40 +862,60 @@
   autoMacroBtn.addEventListener('click', autoCalculateMacros);
 
   // ============================================================
-  // SAVE RECIPE (Firebase)
+  // SAVE RECIPE WITH COMPRESSION
   // ============================================================
-
-  saveRecipeBtn.addEventListener('click', async () => {
+  saveRecipeBtn.addEventListener('click', async function() {
     const name = recipeName.value.trim();
-    if (!name) { alert('Please enter a recipe name.'); return; }
-    if (!tempIngredients.length) { alert('Add at least one ingredient.'); return; }
+    if (!name) {
+      alert('Please enter a recipe name.');
+      return;
+    }
+    if (!tempIngredients.length) {
+      alert('Add at least one ingredient.');
+      return;
+    }
 
-    const recipeData = {
-      name: name,
-      ingredients: [...tempIngredients],
-      instructions: instructionsInput.value.trim(),
-      image: photoPreview.src && photoPreview.classList.contains('show') ? photoPreview.src : '',
-      macros: {
-        cal: parseFloat(macroCal.value) || 0,
-        protein: parseFloat(macroProtein.value) || 0,
-        carbs: parseFloat(macroCarbs.value) || 0,
-        fat: parseFloat(macroFat.value) || 0
-      },
-      createdBy: '👤 Cook',
-      updatedAt: new Date().toISOString()
-    };
+    const originalText = this.textContent;
+    this.textContent = '⏳ Saving...';
+    this.disabled = true;
 
     try {
+      let imageData = '';
+      if (photoPreview.src && photoPreview.classList.contains('show')) {
+        this.textContent = '⏳ Compressing...';
+        imageData = await compressImage(photoPreview.src);
+      }
+
+      const recipeData = {
+        name: name,
+        ingredients: [...tempIngredients],
+        instructions: instructionsInput.value.trim(),
+        image: imageData,
+        imageFit: 'cover',
+        macros: {
+          cal: parseFloat(macroCal.value) || 0,
+          protein: parseFloat(macroProtein.value) || 0,
+          carbs: parseFloat(macroCarbs.value) || 0,
+          fat: parseFloat(macroFat.value) || 0
+        },
+        createdBy: '👤 Cook',
+        updatedAt: new Date().toISOString()
+      };
+
       if (editingId) {
         await db.collection('recipes').doc(editingId).update(recipeData);
       } else {
         recipeData.createdAt = new Date().toISOString();
         await db.collection('recipes').add(recipeData);
       }
+      
       resetForm();
       activateTab('recipes');
     } catch (error) {
       alert('Error saving recipe: ' + error.message);
+    } finally {
+      this.textContent = originalText;
+      this.disabled = false;
     }
   });
 
@@ -814,6 +956,9 @@
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        alert('⚠️ This image is ' + Math.round(file.size/1024/1024) + 'MB.\nIt will be compressed automatically.');
+      }
       const reader = new FileReader();
       reader.onload = (ev) => {
         photoPreview.src = ev.target.result;
@@ -1061,7 +1206,8 @@
     if (el.dataset.font === settings.fontFamily) el.classList.add('active');
   });
 
-  console.log('⚔️ Mace & Meals - Firebase version loaded!');
+  console.log('⚔️ KBCB - Firebase loaded with compression!');
+  console.log('📸 Images will be compressed automatically.');
 </script>
 </body>
 </html>
