@@ -1,3 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>KBCB</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
+    body { margin: 0; padding: 12px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; font-family: -apple-system, 'Helvetica Neue', system-ui, sans-serif; background: #0d0d0d; }
+    .app { max-width: 900px; width: 100%; border-radius: 28px; padding: 20px 16px 28px; position: relative; background: #1a1a1a; border: 1px solid #2a2a2a; color: #eee; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a2a2a; }
+    .header h1 { font-weight: 700; font-size: 1.8rem; margin: 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; color: #eee; }
+    .header h1 small { font-size: 0.85rem; font-weight: 400; opacity: 0.6; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .icon-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 6px 8px; border-radius: 40px; transition: 0.2s; opacity: 0.7; color: #ccc; }
+    .icon-btn:hover { opacity: 1; transform: scale(1.05); }
+    .sync-status { font-size: 0.7rem; padding: 4px 10px; border-radius: 30px; margin-right: 4px; }
+    .sync-status.online { background: rgba(100,200,130,0.15); color: #6ad48a; border: 1px solid rgba(100,200,130,0.2); }
+    .sync-status.offline { background: rgba(255,100,100,0.15); color: #ff6b6b; border: 1px solid rgba(255,100,100,0.2); }
+    .sync-status.syncing { background: rgba(245,166,35,0.15); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+    .tab-btn { border: none; padding: 10px 18px; border-radius: 40px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; flex: 1 0 auto; text-align: center; background: #2a2a2a; color: #888; }
+    .tab-btn.active { background: #f5a623; color: #0d0d0d; box-shadow: 0 4px 16px rgba(245, 166, 35, 0.25); }
+    .tab-btn:active { transform: scale(0.96); }
+    .tab-content { display: none; animation: fade 0.2s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+    
+    .recipe-grid { display: flex; flex-direction: column; gap: 14px; }
+    .recipe-card { background: #222; border-radius: 20px; padding: 16px; border: 1px solid #2a2a2a; cursor: pointer; transition: 0.15s; }
+    .recipe-card:active { transform: scale(0.99); }
+    .recipe-title { font-weight: 700; font-size: 1.2rem; margin: 0 0 4px 0; color: #eee; }
+    .recipe-meta { font-size: 0.7rem; color: #666; margin-bottom: 6px; }
+    
+    .recipe-img-wrapper {
+      width: 100%;
+      margin: 10px 0 12px 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #2f2f2f;
+      background: #1a1a1a;
+      position: relative;
+      min-height: 150px;
+    }
+    .recipe-img-wrapper img {
+      width: 100%;
+      height: 250px;
+      display: block;
+      object-fit: cover;
+    }
+    .recipe-img-wrapper .ratio-controls {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.8);
+      padding: 4px 8px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .recipe-card:hover .ratio-controls,
+    .recipe-card:active .ratio-controls {
+      opacity: 1;
+    }
+    .recipe-img-wrapper .ratio-controls button {
+      background: none;
+      border: none;
+      color: #ccc;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .recipe-img-wrapper .ratio-controls button:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .recipe-img-wrapper .ratio-controls button.active {
+      background: rgba(245,166,35,0.3);
+      color: #f5a623;
+    }
+    
+    .recipe-img-placeholder { width: 100%; height: 150px; background: #1a1a1a; border-radius: 14px; margin: 10px 0 12px 0; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.85rem; border: 1px dashed #333; }
+    .ingredient-list { list-style: none; padding: 0; margin: 8px 0 6px 0; display: flex; flex-wrap: wrap; gap: 6px 10px; }
+    .ingredient-list li { background: #2a2a2a; padding: 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #bbb; border: 1px solid #333; }
+    .macros-display { display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 4px; padding: 10px 14px; background: #1a1a1a; border-radius: 14px; font-size: 0.85rem; border: 1px solid #2a2a2a; }
+    .macros-display span { font-weight: 500; color: #888; }
+    .macros-display .macro-value { color: #f5a623; font-weight: 700; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; border-top: 1px solid #2a2a2a; padding-top: 12px; }
+    
+    .btn { border: none; padding: 6px 16px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+    .btn:active { transform: scale(0.95); }
+    .btn-primary { background: #f5a623; color: #0d0d0d; box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3); }
+    .btn-primary:active { opacity: 0.8; }
+    .btn-outline { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.25); color: #e0e0e0; }
+    .btn-danger { background: rgba(255,100,100,0.1); border: 1px solid rgba(255,100,100,0.3); color: #ff6b6b; }
+    .btn-auto { background: rgba(100,150,255,0.1); border: 1px solid rgba(100,150,255,0.3); color: #8ab4f5; }
+    .empty-state { text-align: center; padding: 40px 10px; font-size: 1rem; color: #555; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; color: #ccc; }
+    .form-control { width: 100%; padding: 12px 16px; border-radius: 40px; border: 1px solid #333; background: #1a1a1a; color: #eee; font-size: 1rem; transition: 0.15s; outline: none; }
+    .form-control:focus { border-color: #f5a623; box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15); }
+    .form-control::placeholder { color: #555; }
+    textarea.form-control { border-radius: 20px; resize: vertical; min-height: 70px; font-family: inherit; }
+    .ingredient-input-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .ingredient-input-group input { flex: 2; min-width: 120px; }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+    .chip { background: #2a2a2a; padding: 4px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #ccc; border: 1px solid #333; }
+    .chip .remove { cursor: pointer; font-weight: 700; color: #888; font-size: 1rem; }
+    .chip .remove:hover { color: #d45a5a; }
+    
+    .macros-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .macro-input-group { display: flex; align-items: center; gap: 8px; }
+    .macro-input-group label { min-width: 50px; font-weight: 600; margin: 0; color: #aaa; font-size: 0.85rem; }
+    .macro-input-group input { flex: 1; padding: 8px 12px; border-radius: 30px; border: 1px solid #333; background: #1a1a1a; color: #eee; font-size: 0.95rem; width: 80px; outline: none; }
+    .macro-input-group input:focus { border-color: #f5a623; box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15); }
+    .macro-auto-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+    .macro-auto-row .btn { padding: 8px 16px; }
+    .auto-progress { font-size: 0.8rem; color: #8ab4f5; margin-left: 8px; }
+    
+    .shopping-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #2a2a2a; }
+    .shopping-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #f5a623; cursor: pointer; }
+    .shopping-item .item-name { flex: 1; font-size: 0.95rem; color: #ddd; }
+    .shopping-item .item-source { font-size: 0.75rem; color: #555; }
+    .shopping-item input:checked + .item-name { text-decoration: line-through; color: #555; }
+    .footer-bar { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; justify-content: space-between; }
+    
+    #fileInput { display: none; }
+    .photo-upload-area { border: 2px dashed #333; border-radius: 18px; padding: 20px; text-align: center; cursor: pointer; transition: 0.2s; background: #1a1a1a; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .photo-upload-area:active { transform: scale(0.98); }
+    .photo-upload-area.has-image { border-color: #f5a623; background: #1f1a12; }
+    .photo-upload-area div { color: #666; font-size: 0.9rem; }
+    .photo-preview { max-height: 200px; border-radius: 14px; margin-top: 10px; display: none; width: 100%; object-fit: cover; }
+    .photo-preview.show { display: block; }
+    
+    .inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .edit-hint { color: #444; font-size: 0.7rem; }
+    .form-title { color: #eee; font-weight: 700; font-size: 1.3rem; margin-top: 0; margin-bottom: 16px; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-group .btn { flex: 1; justify-content: center; padding: 14px; font-size: 1rem; }
+    
+    .settings-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .settings-overlay.open { display: flex; }
+    .settings-panel { max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 28px; padding: 28px 24px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); animation: slideUp 0.3s ease; background: #1f1f1f; color: #eee; border: 1px solid #2a2a2a; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .settings-panel h2 { margin-top: 0; margin-bottom: 20px; font-weight: 700; font-size: 1.3rem; display: flex; align-items: center; justify-content: space-between; }
+    .settings-panel h2 .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; opacity: 0.6; padding: 0 4px; color: #ccc; }
+    .settings-group { margin-bottom: 18px; }
+    .settings-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; opacity: 0.8; }
+    .settings-group .desc { font-size: 0.75rem; opacity: 0.5; margin-bottom: 6px; }
+    .settings-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .color-option { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+    .color-option:hover { transform: scale(1.1); }
+    .color-option.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.3); }
+    .font-option { padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); cursor: pointer; font-size: 0.9rem; transition: 0.2s; color: #ccc; }
+    .font-option:hover { background: rgba(255,255,255,0.1); }
+    .font-option.active { border-color: #f5a623; background: rgba(245, 166, 35, 0.15); }
+    .settings-actions { display: flex; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .settings-actions .btn { flex: 1; justify-content: center; padding: 12px; font-size: 0.95rem; }
+    .settings-group input[type="range"] { width: 100%; accent-color: #f5a623; }
+    .color-hex-input { display: flex; gap: 8px; align-items: center; }
+    .color-hex-input input[type="color"] { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; background: none; padding: 0; }
+    .color-hex-input input[type="text"] { flex: 1; padding: 8px 12px; border-radius: 30px; border: 1px solid #333; font-size: 0.9rem; background: #1a1a1a; color: #eee; }
+    
+    .sharing-info { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.15); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.8rem; color: #aaa; }
+    .sharing-info strong { color: #f5a623; }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  
+  <!-- HEADER -->
+  <div class="header">
+    <h1>⚔️ <span id="appTitle">KBCB</span> <small>shared</small></h1>
+    <div class="header-actions">
+      <span class="sync-status" id="syncStatus">🔌 connecting</span>
+      <button class="icon-btn" id="settingsToggle" aria-label="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <!-- SHARING INFO -->
+  <div class="sharing-info" id="sharingInfo">
+    Add your Fav meals to share with your boyfriend XOXO
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="recipes">📖 Recipes</button>
+    <button class="tab-btn" data-tab="shopping">🛒 Shopping</button>
+    <button class="tab-btn" data-tab="add">➕ New</button>
+  </div>
+
+  <!-- RECIPES TAB -->
+  <div id="tab-recipes" class="tab-content active">
+    <div id="recipeList" class="recipe-grid">
+      <div class="empty-state">⏳ Loading recipes...</div>
+    </div>
+  </div>
+
+  <!-- SHOPPING TAB -->
+  <div id="tab-shopping" class="tab-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+      <h3 style="margin:0; color:#eee; font-weight:600; font-size:1.1rem;">🛒 Shopping list</h3>
+      <button class="btn btn-outline" id="clearShoppingBtn">Clear checked</button>
+    </div>
+    <div id="shoppingListContainer">
+      <div class="empty-state">⏳ Loading shopping list...</div>
+    </div>
+    <div class="footer-bar">
+      <button class="btn btn-outline" id="addCustomShoppingBtn">➕ Add item</button>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT RECIPE TAB -->
+  <div id="tab-add" class="tab-content">
+    <h3 class="form-title" id="formTitle">📝 New Recipe</h3>
+    <input type="hidden" id="editId" value="">
+
+    <div class="form-group">
+      <label>Recipe name *</label>
+      <input class="form-control" id="recipeName" placeholder="e.g. Spaghetti aglio e olio">
+    </div>
+
+    <div class="form-group">
+      <label>📸 Photo</label>
+      <div class="photo-upload-area" id="photoUploadArea">
+        <div id="photoUploadText">Tap to add or change photo</div>
+        <input type="file" accept="image/*" id="fileInput">
+        <img id="photoPreview" class="photo-preview" alt="Preview">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Ingredients *</label>
+      <div class="ingredient-input-group">
+        <input class="form-control" id="ingredientInput" placeholder="e.g. 200g spaghetti">
+        <button class="btn btn-primary" id="addIngredientBtn">+ Add</button>
+      </div>
+      <div id="ingredientChips" class="chip-group"></div>
+    </div>
+
+    <div class="form-group">
+      <label>📊 Macros (per serving)</label>
+      <div class="macros-grid">
+        <div class="macro-input-group">
+          <label>🔥 Cal</label>
+          <input class="form-control" id="macroCal" placeholder="0" type="number" step="1">
+        </div>
+        <div class="macro-input-group">
+          <label>💪 Protein</label>
+          <input class="form-control" id="macroProtein" placeholder="0g" type="number" step="0.1">
+        </div>
+        <div class="macro-input-group">
+          <label>🍞 Carbs</label>
+          <input class="form-control" id="macroCarbs" placeholder="0g" type="number" step="0.1">
+        </div>
+        <div class="macro-input-group">
+          <label>🥑 Fat</label>
+          <input class="form-control" id="macroFat" placeholder="0g" type="number" step="0.1">
+        </div>
+      </div>
+      <div class="macro-auto-row">
+        <button class="btn btn-auto" id="autoMacroBtn">🤖 Auto-Calculate Macros</button>
+        <span class="auto-progress" id="autoProgress"></span>
+      </div>
+      <div style="font-size:0.75rem; opacity:0.4; margin-top:4px;">Auto-calc estimates based on ingredients.</div>
+    </div>
+
+    <div class="form-group">
+      <label>Instructions</label>
+      <textarea class="form-control" id="instructionsInput" placeholder="Boil water, cook pasta..."></textarea>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="saveRecipeBtn">💾 Save Recipe</button>
+      <button class="btn btn-outline" id="cancelEditBtn">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS OVERLAY ===== -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel" id="settingsPanel">
+    <h2>
+      ⚙️ Settings
+      <button class="close-btn" id="settingsClose">✕</button>
+    </h2>
+    <div class="settings-group">
+      <label>🎨 Accent Color</label>
+      <div class="settings-row">
+        <button class="color-option active" style="background:#f5a623;" data-color="#f5a623"></button>
+        <button class="color-option" style="background:#ff6b6b;" data-color="#ff6b6b"></button>
+        <button class="color-option" style="background:#4ecdc4;" data-color="#4ecdc4"></button>
+        <button class="color-option" style="background:#45b7d1;" data-color="#45b7d1"></button>
+        <button class="color-option" style="background:#96ceb4;" data-color="#96ceb4"></button>
+        <button class="color-option" style="background:#dda0dd;" data-color="#dda0dd"></button>
+        <button class="color-option" style="background:#ff9ff3;" data-color="#ff9ff3"></button>
+        <button class="color-option" style="background:#ffd93d;" data-color="#ffd93d"></button>
+        <button class="color-option" style="background:#a8e6cf;" data-color="#a8e6cf"></button>
+      </div>
+      <div class="color-hex-input" style="margin-top:8px;">
+        <input type="color" id="customColorPicker" value="#f5a623">
+        <input type="text" class="form-control" id="customColorHex" placeholder="#f5a623" value="#f5a623" style="flex:1;">
+        <button class="btn btn-primary" id="applyCustomColor">Apply</button>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label>🔤 Font Family</label>
+      <div class="settings-row">
+        <button class="font-option active" data-font="'Helvetica Neue', system-ui, sans-serif">System</button>
+        <button class="font-option" data-font="Georgia, serif">Serif</button>
+        <button class="font-option" data-font="'Courier New', monospace">Mono</button>
+        <button class="font-option" data-font="'Comic Sans MS', cursive">Fun</button>
+        <button class="font-option" data-font="'Trebuchet MS', sans-serif">Trebuchet</button>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label>📏 Card Radius</label>
+      <input type="range" id="radiusSlider" min="0" max="40" value="20" style="width:100%;">
+      <div style="display:flex; justify-content:space-between; font-size:0.75rem; opacity:0.4;">
+        <span>Sharp</span>
+        <span id="radiusValue">20px</span>
+        <span>Round</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label>📏 Font Size</label>
+      <input type="range" id="fontSizeSlider" min="80" max="120" value="100" style="width:100%;">
+      <div style="display:flex; justify-content:space-between; font-size:0.75rem; opacity:0.4;">
+        <span>Smaller</span>
+        <span id="fontSizeValue">100%</span>
+        <span>Larger</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label>🌓 Theme</label>
+      <div class="settings-row">
+        <button class="btn btn-primary" id="themeDark" style="flex:1;">🌙 Dark</button>
+        <button class="btn btn-outline" id="themeLight" style="flex:1;">☀️ Light</button>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn btn-outline" id="resetSettings">🔄 Reset Defaults</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ============================================================
   // 🔥 YOUR FIREBASE CONFIG
@@ -56,76 +414,87 @@
   const autoProgress = document.getElementById('autoProgress');
 
   // ============================================================
-  // 🔥 STRONG IMAGE COMPRESSION
+  // 🔥 IMAGE COMPRESSION - GUARANTEED TO WORK
   // ============================================================
-  function compressImage(dataUrl, maxWidth = 800, maxHeight = 800, quality = 0.7) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = function() {
-        let width = img.width;
-        let height = img.height;
-        
-        // Resize to max 800px
-        if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
-            height = height * (maxWidth / width);
-            width = maxWidth;
-          } else {
-            width = width * (maxHeight / height);
-            height = maxHeight;
-          }
-        }
-        
-        // Draw on canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(width);
-        canvas.height = Math.round(height);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Compress with quality
-        let compressed = canvas.toDataURL('image/jpeg', quality);
-        
-        // Keep reducing quality until under 700KB
-        let currentQuality = quality;
-        const targetSize = 700 * 1024;
-        let attempts = 0;
-        
-        while (compressed.length > targetSize && currentQuality > 0.1 && attempts < 10) {
-          currentQuality -= 0.1;
-          compressed = canvas.toDataURL('image/jpeg', currentQuality);
-          attempts++;
-        }
-        
-        // If STILL too big, resize even smaller
-        if (compressed.length > targetSize) {
-          const smallerCanvas = document.createElement('canvas');
-          const smallerSize = 500;
-          let w = canvas.width;
-          let h = canvas.height;
-          if (w > smallerSize || h > smallerSize) {
-            if (w > h) {
-              h = h * (smallerSize / w);
-              w = smallerSize;
-            } else {
-              w = w * (smallerSize / h);
-              h = smallerSize;
+  function compressImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      try {
+        const img = new Image();
+        img.onload = function() {
+          try {
+            // Target size: max 600px
+            let width = img.width;
+            let height = img.height;
+            const maxSize = 600;
+            
+            if (width > maxSize || height > maxSize) {
+              if (width > height) {
+                height = Math.round(height * (maxSize / width));
+                width = maxSize;
+              } else {
+                width = Math.round(width * (maxSize / height));
+                height = maxSize;
+              }
             }
+            
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Start compressing
+            let quality = 0.7;
+            let compressed = canvas.toDataURL('image/jpeg', quality);
+            
+            // Keep reducing until under 500KB
+            let attempts = 0;
+            while (compressed.length > 500 * 1024 && quality > 0.1 && attempts < 15) {
+              quality -= 0.05;
+              compressed = canvas.toDataURL('image/jpeg', quality);
+              attempts++;
+            }
+            
+            // If still too big, resize even smaller
+            if (compressed.length > 500 * 1024) {
+              const smallCanvas = document.createElement('canvas');
+              const smallSize = 400;
+              let w = canvas.width;
+              let h = canvas.height;
+              if (w > smallSize || h > smallSize) {
+                if (w > h) {
+                  h = Math.round(h * (smallSize / w));
+                  w = smallSize;
+                } else {
+                  w = Math.round(w * (smallSize / h));
+                  h = smallSize;
+                }
+              }
+              smallCanvas.width = w;
+              smallCanvas.height = h;
+              const smallCtx = smallCanvas.getContext('2d');
+              smallCtx.drawImage(canvas, 0, 0, w, h);
+              compressed = smallCanvas.toDataURL('image/jpeg', 0.3);
+            }
+            
+            console.log('✅ Compressed to:', Math.round(compressed.length / 1024), 'KB');
+            resolve(compressed);
+          } catch (err) {
+            reject(err);
           }
-          smallerCanvas.width = Math.round(w);
-          smallerCanvas.height = Math.round(h);
-          const smallerCtx = smallerCanvas.getContext('2d');
-          smallerCtx.drawImage(canvas, 0, 0, smallerCanvas.width, smallerCanvas.height);
-          compressed = smallerCanvas.toDataURL('image/jpeg', 0.5);
-        }
-        
-        resolve(compressed);
-      };
-      img.src = dataUrl;
+        };
+        img.onerror = function() {
+          reject(new Error('Failed to load image'));
+        };
+        img.src = dataUrl;
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 
-  // ===== FOOD DATABASE (KEEP YOUR EXISTING ONE) =====
+  // ===== FOOD DATABASE =====
   const foodDB = {
     'chicken breast': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
     'chicken': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
@@ -222,7 +591,7 @@
         const fitMode = r.imageFit || 'cover';
         imgHtml = `
           <div class="recipe-img-wrapper">
-            <img src="${r.image}" alt="${r.name}" style="object-fit: ${fitMode};">
+            <img src="${r.image}" alt="${r.name}" style="object-fit: ${fitMode}; height: 250px;">
             <div class="ratio-controls">
               <button class="${fitMode === 'cover' ? 'active' : ''}" data-id="${r.id}" data-fit="cover">📐</button>
               <button class="${fitMode === 'contain' ? 'active' : ''}" data-id="${r.id}" data-fit="contain">📏</button>
@@ -530,40 +899,45 @@
   autoMacroBtn.addEventListener('click', autoCalculateMacros);
 
   // ============================================================
-  // SAVE RECIPE (with STRONGER compression)
+  // SAVE RECIPE - WITH GUARANTEED COMPRESSION
   // ============================================================
 
-  saveRecipeBtn.addEventListener('click', async () => {
+  saveRecipeBtn.addEventListener('click', async function() {
     const name = recipeName.value.trim();
     if (!name) { alert('Please enter a recipe name.'); return; }
     if (!tempIngredients.length) { alert('Add at least one ingredient.'); return; }
 
-    const originalText = saveRecipeBtn.textContent;
-    saveRecipeBtn.textContent = '⏳ Compressing...';
-    saveRecipeBtn.disabled = true;
+    // Show status
+    const originalText = this.textContent;
+    this.textContent = '⏳ Processing...';
+    this.disabled = true;
 
     try {
-      let compressedImage = '';
-      if (photoPreview.src && photoPreview.classList.contains('show')) {
-        // Compress to max 800px, quality 0.7
-        compressedImage = await compressImage(photoPreview.src, 800, 800, 0.7);
+      let imageData = '';
+      const hasImage = photoPreview.src && photoPreview.classList.contains('show');
+      
+      if (hasImage) {
+        this.textContent = '⏳ Compressing image...';
+        console.log('📸 Starting compression...');
         
-        // If still too large, try even smaller
-        if (compressedImage.length > 800 * 1024) {
-          compressedImage = await compressImage(photoPreview.src, 600, 600, 0.5);
-        }
+        // Compress the image
+        imageData = await compressImage(photoPreview.src);
+        console.log('✅ Compressed size:', Math.round(imageData.length / 1024), 'KB');
         
-        // Last resort - very small
-        if (compressedImage.length > 800 * 1024) {
-          compressedImage = await compressImage(photoPreview.src, 400, 400, 0.4);
+        // If still too large, emergency fallback
+        if (imageData.length > 800 * 1024) {
+          console.log('⚠️ Still large, emergency compression...');
+          imageData = await compressImage(photoPreview.src);
+          console.log('✅ Final size:', Math.round(imageData.length / 1024), 'KB');
         }
       }
 
+      // Build recipe data
       const recipeData = {
         name: name,
         ingredients: [...tempIngredients],
-        instructions: instructionsInput.value.trim(),
-        image: compressedImage,
+        instructions: instructionsInput.value.trim() || '',
+        image: imageData,
         imageFit: 'cover',
         macros: {
           cal: parseFloat(macroCal.value) || 0,
@@ -575,6 +949,9 @@
         updatedAt: new Date().toISOString()
       };
 
+      this.textContent = '⏳ Saving...';
+
+      // Save to Firebase
       if (editingId) {
         await db.collection('recipes').doc(editingId).update(recipeData);
       } else {
@@ -582,13 +959,16 @@
         await db.collection('recipes').add(recipeData);
       }
       
+      console.log('✅ Recipe saved!');
       resetForm();
       activateTab('recipes');
+      
     } catch (error) {
+      console.error('❌ Error:', error);
       alert('Error saving recipe: ' + error.message);
     } finally {
-      saveRecipeBtn.textContent = originalText;
-      saveRecipeBtn.disabled = false;
+      this.textContent = originalText;
+      this.disabled = false;
     }
   });
 
@@ -622,22 +1002,26 @@
   });
 
   // ============================================================
-  // PHOTO UPLOAD (with size warning)
+  // PHOTO UPLOAD
   // ============================================================
 
   photoUploadArea.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log('📸 File selected:', Math.round(file.size / 1024), 'KB');
+      
       if (file.size > 3 * 1024 * 1024) {
         alert('⚠️ This image is ' + Math.round(file.size/1024/1024) + 'MB.\nIt will be compressed automatically.');
       }
+      
       const reader = new FileReader();
       reader.onload = (ev) => {
         photoPreview.src = ev.target.result;
         photoPreview.classList.add('show');
         photoUploadArea.classList.add('has-image');
         photoUploadText.textContent = 'Change photo';
+        console.log('📸 Preview loaded');
       };
       reader.readAsDataURL(file);
     }
@@ -880,4 +1264,7 @@
   });
 
   console.log('⚔️ KBCB - Firebase version loaded!');
+  console.log('📸 Image compression is active!');
 </script>
+</body>
+</html>
