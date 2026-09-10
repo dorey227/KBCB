@@ -32,7 +32,6 @@
     .tab-content.active { display: block; }
     @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
     
-    /* ===== RECIPE CARDS ===== */
     .recipe-grid { display: flex; flex-direction: column; gap: 14px; }
     .recipe-card { background: #222; border-radius: 20px; padding: 16px; border: 1px solid #2a2a2a; cursor: pointer; transition: 0.15s; }
     .recipe-card:active { transform: scale(0.99); }
@@ -64,7 +63,6 @@
     .btn-auto { background: rgba(100,150,255,0.1); border: 1px solid rgba(100,150,255,0.3); color: #8ab4f5; }
     .empty-state { text-align: center; padding: 40px 10px; font-size: 1rem; color: #555; }
     
-    /* ===== FORMS ===== */
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; color: #ccc; }
     .form-control { width: 100%; padding: 12px 16px; border-radius: 40px; border: 1px solid #333; background: #1a1a1a; color: #eee; font-size: 1rem; transition: 0.15s; outline: none; }
@@ -87,7 +85,6 @@
     .macro-auto-row .btn { padding: 8px 16px; }
     .auto-progress { font-size: 0.8rem; color: #8ab4f5; margin-left: 8px; }
     
-    /* ===== SHOPPING ===== */
     .shopping-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #2a2a2a; }
     .shopping-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #f5a623; cursor: pointer; }
     .shopping-item .item-name { flex: 1; font-size: 0.95rem; color: #ddd; }
@@ -109,7 +106,6 @@
     .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
     .btn-group .btn { flex: 1; justify-content: center; padding: 14px; font-size: 1rem; }
     
-    /* ===== SETTINGS ===== */
     .settings-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .settings-overlay.open { display: flex; }
     .settings-panel { max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 28px; padding: 28px 24px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); animation: slideUp 0.3s ease; background: #1f1f1f; color: #eee; border: 1px solid #2a2a2a; }
@@ -136,7 +132,6 @@
     .sharing-info { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.15); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.8rem; color: #aaa; }
     .sharing-info strong { color: #f5a623; }
     
-    /* ===== RECIPE DETAIL VIEW ===== */
     .detail-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0d0d0d; z-index: 1500; overflow-y: auto; }
     .detail-overlay.open { display: block; }
     .detail-container { max-width: 900px; margin: 0 auto; padding: 0 0 100px 0; min-height: 100vh; background: #1a1a1a; }
@@ -152,7 +147,6 @@
     .detail-section-title { font-size: 1.1rem; font-weight: 700; color: #f5a623; margin: 24px 0 12px 0; display: flex; align-items: center; gap: 8px; }
     .detail-section-title::after { content: ''; flex: 1; height: 1px; background: #2a2a2a; }
     
-    /* ===== TICKABLE INGREDIENTS ===== */
     .tickable-ingredient { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #222; border: 1px solid #2a2a2a; border-radius: 14px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; user-select: none; }
     .tickable-ingredient:hover { background: #2a2a2a; border-color: #333; }
     .tickable-ingredient.added { background: rgba(100,200,130,0.1); border-color: rgba(100,200,130,0.3); }
@@ -171,13 +165,11 @@
     .detail-bottom { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
     .detail-bottom .btn { width: 100%; justify-content: center; padding: 16px; font-size: 1rem; border-radius: 20px; }
     
-    /* ===== FLASH MESSAGES ===== */
     .flash-message { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 14px 28px; border-radius: 16px; font-size: 1.1rem; font-weight: 700; z-index: 9999; box-shadow: 0 8px 30px rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
     .flash-message.show { opacity: 1; }
     .flash-message.success { background: #2d7a4a; color: white; }
     .flash-message.error { background: #7a2d2d; color: white; }
     
-    /* ===== INSPIRATION TAB ===== */
     .inspiration-download { text-align: center; padding: 60px 20px; }
     .inspiration-download h2 { color: #eee; font-size: 1.5rem; margin-bottom: 10px; }
     .inspiration-download p { color: #888; margin-bottom: 24px; font-size: 0.95rem; line-height: 1.6; }
@@ -201,7 +193,6 @@
 <body>
 <div class="app" id="app">
   
-  <!-- HEADER -->
   <div class="header">
     <h1>⚔️ <span id="appTitle">KBCB</span> <small>shared</small></h1>
     <div class="header-actions">
@@ -210,12 +201,10 @@
     </div>
   </div>
 
-  <!-- SHARING INFO -->
   <div class="sharing-info" id="sharingInfo">
     Add your Fav meals to share with your boyfriend XOXO
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="recipes">📖 Recipes</button>
     <button class="tab-btn" data-tab="shopping">🛒 Shopping</button>
@@ -223,14 +212,12 @@
     <button class="tab-btn" data-tab="inspiration">💡 Inspiration</button>
   </div>
 
-  <!-- RECIPES TAB -->
   <div id="tab-recipes" class="tab-content active">
     <div id="recipeList" class="recipe-grid">
       <div class="empty-state">⏳ Loading recipes...</div>
     </div>
   </div>
 
-  <!-- SHOPPING TAB -->
   <div id="tab-shopping" class="tab-content">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
       <h3 style="margin:0; color:#eee; font-weight:600; font-size:1.1rem;">🛒 Shopping list</h3>
@@ -244,7 +231,6 @@
     </div>
   </div>
 
-  <!-- ADD/EDIT RECIPE TAB -->
   <div id="tab-add" class="tab-content">
     <h3 class="form-title" id="formTitle">📝 New Recipe</h3>
     <input type="hidden" id="editId" value="">
@@ -309,13 +295,11 @@
     </div>
   </div>
 
-  <!-- INSPIRATION TAB -->
   <div id="tab-inspiration" class="tab-content">
     <div id="inspirationContent"></div>
   </div>
 </div>
 
-<!-- ===== RECIPE DETAIL OVERLAY ===== -->
 <div class="detail-overlay" id="detailOverlay">
   <div class="detail-container">
     <div class="detail-top-bar">
@@ -330,7 +314,6 @@
   </div>
 </div>
 
-<!-- ===== SETTINGS OVERLAY ===== -->
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-panel" id="settingsPanel">
     <h2>
@@ -398,9 +381,6 @@
 </div>
 
 <script>
-  // ============================================================
-  // 🔥 FIREBASE CONFIG
-  // ============================================================
   const firebaseConfig = {
     apiKey: "AIzaSyDjn72V5G3hyPoBlfzWm3N_PlgBowV8OXw",
     authDomain: "cookbook-bc019.firebaseapp.com",
@@ -411,12 +391,10 @@
     appId: "1:879130337307:web:66152f12488f3cded318be",
     measurementId: "G-LHVRVSKZH0"
   };
-  // ============================================================
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ===== STATE =====
   let recipes = [];
   let shoppingItems = [];
   let tempIngredients = [];
@@ -431,7 +409,6 @@
     theme: 'dark'
   };
 
-  // ===== DOM REFS =====
   const recipeListEl = document.getElementById('recipeList');
   const shoppingContainer = document.getElementById('shoppingListContainer');
   const syncStatus = document.getElementById('syncStatus');
@@ -458,9 +435,11 @@
   const detailBody = document.getElementById('detailBody');
   const inspirationContent = document.getElementById('inspirationContent');
 
-  // ============================================================
-  // IMAGE COMPRESSION
-  // ============================================================
+  // ===== HELPER: CHECK IF IMAGE IS VALID (base64 OR external URL) =====
+  function isValidImage(img) {
+    return img && (img.startsWith('data:image') || img.startsWith('http'));
+  }
+
   function compressImage(dataUrl) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -489,9 +468,6 @@
     });
   }
 
-  // ============================================================
-  // FLASH MESSAGE
-  // ============================================================
   function showFlash(message, type) {
     const flash = document.createElement('div');
     flash.className = 'flash-message ' + (type === 'error' ? 'error' : 'success');
@@ -504,9 +480,6 @@
     }, 800);
   }
 
-  // ============================================================
-  // FORMAT LINKS
-  // ============================================================
   function formatLinks(text) {
     if (!text) return '';
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -524,7 +497,6 @@
     });
   }
 
-  // ===== FOOD DATABASE =====
   const foodDB = {
     'chicken breast': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
     'chicken': { cal: 165, protein: 31, carbs: 0, fat: 3.6 },
@@ -574,9 +546,6 @@
     'eggs': { perUnit: 50, cal: 77, protein: 6.5, carbs: 0.5, fat: 5.5 }
   };
 
-  // ============================================================
-  // FIREBASE LISTENERS
-  // ============================================================
   db.collection('recipes').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
     syncStatus.textContent = '🟢 online';
     syncStatus.className = 'sync-status online';
@@ -601,13 +570,9 @@
       shoppingItems.push(data);
     });
     renderShopping();
-    // Refresh detail view if open
     if (currentDetailId) refreshDetailCheckboxes();
   });
 
-  // ============================================================
-  // RENDER RECIPES
-  // ============================================================
   function renderRecipes() {
     if (!recipes.length) {
       recipeListEl.innerHTML = `<div class="empty-state">🍽️ No recipes yet. Add your first!</div>`;
@@ -616,11 +581,12 @@
     let html = '';
     recipes.forEach((r) => {
       let imgHtml = '';
-      if (r.image && r.image.startsWith('data:image')) {
+      // ✅ FIX: Accept both base64 AND external URLs
+      if (isValidImage(r.image)) {
         const fitMode = r.imageFit || 'cover';
         imgHtml = `
           <div class="recipe-img-wrapper">
-            <img src="${r.image}" alt="${r.name}" style="object-fit: ${fitMode};">
+            <img src="${r.image}" alt="${r.name}" style="object-fit: ${fitMode};" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'recipe-img-placeholder\\'>📸 Image unavailable</div>';">
             <div class="ratio-controls">
               <button class="${fitMode === 'cover' ? 'active' : ''}" data-id="${r.id}" data-fit="cover">📐</button>
               <button class="${fitMode === 'contain' ? 'active' : ''}" data-id="${r.id}" data-fit="contain">📏</button>
@@ -674,7 +640,6 @@
     });
     recipeListEl.innerHTML = html;
 
-    // Ratio controls
     document.querySelectorAll('.ratio-controls button').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -689,12 +654,10 @@
       });
     });
 
-    // Tap card → open DETAIL VIEW
     document.querySelectorAll('.recipe-card').forEach(card => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('button')) return;
-        const id = card.dataset.id;
-        openDetailView(id);
+        openDetailView(card.dataset.id);
       });
     });
 
@@ -709,24 +672,20 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = btn.dataset.id;
-        if (confirm('Delete this recipe?')) {
-          db.collection('recipes').doc(id).delete();
-        }
+        if (confirm('Delete this recipe?')) db.collection('recipes').doc(id).delete();
       });
     });
   }
 
-  // ============================================================
-  // RECIPE DETAIL VIEW
-  // ============================================================
   function openDetailView(id) {
     const recipe = recipes.find(r => r.id === id);
     if (!recipe) return;
     currentDetailId = id;
     
     let imgHtml = '';
-    if (recipe.image && recipe.image.startsWith('data:image')) {
-      imgHtml = `<img src="${recipe.image}" class="detail-img" alt="${recipe.name}">`;
+    // ✅ FIX: Accept both base64 AND external URLs
+    if (isValidImage(recipe.image)) {
+      imgHtml = `<img src="${recipe.image}" class="detail-img" alt="${recipe.name}" onerror="this.style.display='none';">`;
     }
     
     let macrosHtml = '';
@@ -772,7 +731,6 @@
       <div class="detail-instructions">${instructionsHtml}</div>
     `;
     
-    // Add click handlers to ingredients
     document.querySelectorAll('.tickable-ingredient').forEach(el => {
       el.addEventListener('click', () => toggleIngredient(el, el.dataset.ingredient));
     });
@@ -791,7 +749,6 @@
     const isAdded = shoppingItems.some(s => s.name === ingredientName);
     
     if (isAdded) {
-      // Remove from shopping
       const item = shoppingItems.find(s => s.name === ingredientName);
       if (item) {
         await db.collection('shopping').doc(item.id).delete();
@@ -800,7 +757,6 @@
         showFlash('❌ Removed', 'error');
       }
     } else {
-      // Add to shopping
       await db.collection('shopping').add({
         name: ingredientName,
         checked: false,
@@ -828,13 +784,13 @@
     });
   }
 
-  // Detail view buttons
   document.getElementById('detailClose').addEventListener('click', closeDetailView);
   
   document.getElementById('detailEdit').addEventListener('click', () => {
     if (currentDetailId) {
+      const id = currentDetailId;
       closeDetailView();
-      loadRecipeForEdit(currentDetailId);
+      loadRecipeForEdit(id);
     }
   });
   
@@ -867,9 +823,6 @@
     }
   });
 
-  // ============================================================
-  // RENDER SHOPPING
-  // ============================================================
   function renderShopping() {
     if (!shoppingItems.length) {
       shoppingContainer.innerHTML = `<div class="empty-state">🛒 Your shopping list is empty.</div>`;
@@ -891,22 +844,18 @@
 
     document.querySelectorAll('.shopping-checkbox').forEach((cb) => {
       const id = cb.closest('.shopping-item').dataset.id;
-      cb.addEventListener('change', (e) => {
+      cb.addEventListener('change', () => {
         db.collection('shopping').doc(id).update({ checked: cb.checked });
       });
     });
 
     document.querySelectorAll('[data-shopping-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = btn.dataset.shoppingId;
-        db.collection('shopping').doc(id).delete();
+      btn.addEventListener('click', () => {
+        db.collection('shopping').doc(btn.dataset.shoppingId).delete();
       });
     });
   }
 
-  // ============================================================
-  // FORM FUNCTIONS
-  // ============================================================
   function resetForm() {
     recipeName.value = '';
     tempIngredients = [];
@@ -937,7 +886,8 @@
     instructionsInput.value = recipe.instructions || '';
     tempIngredients = recipe.ingredients ? [...recipe.ingredients] : [];
     renderIngredientChips();
-    if (recipe.image && recipe.image.startsWith('data:image')) {
+    // ✅ FIX: Accept both base64 AND external URLs
+    if (isValidImage(recipe.image)) {
       photoPreview.src = recipe.image;
       photoPreview.classList.add('show');
       photoUploadArea.classList.add('has-image');
@@ -1030,9 +980,6 @@
 
   autoMacroBtn.addEventListener('click', autoCalculateMacros);
 
-  // ============================================================
-  // SAVE RECIPE
-  // ============================================================
   saveRecipeBtn.addEventListener('click', async function() {
     const name = recipeName.value.trim();
     if (!name) { alert('Please enter a recipe name.'); return; }
@@ -1045,8 +992,13 @@
     try {
       let imageData = '';
       if (photoPreview.src && photoPreview.classList.contains('show')) {
-        this.textContent = '⏳ Compressing...';
-        imageData = await compressImage(photoPreview.src);
+        // Only compress base64 images (user uploads). External URLs pass through.
+        if (photoPreview.src.startsWith('data:image')) {
+          this.textContent = '⏳ Compressing...';
+          imageData = await compressImage(photoPreview.src);
+        } else {
+          imageData = photoPreview.src; // External URL (from Inspiration)
+        }
       }
 
       const recipeData = {
@@ -1081,9 +1033,6 @@
     }
   });
 
-  // ============================================================
-  // INGREDIENTS (form)
-  // ============================================================
   function renderIngredientChips() {
     ingredientChips.innerHTML = tempIngredients.map((ing, i) => 
       `<span class="chip">${ing} <span class="remove" data-ing-index="${i}">✕</span></span>`
@@ -1109,9 +1058,6 @@
     if (e.key === 'Enter') { e.preventDefault(); addIngredientBtn.click(); }
   });
 
-  // ============================================================
-  // PHOTO UPLOAD
-  // ============================================================
   photoUploadArea.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -1136,9 +1082,6 @@
     }
   });
 
-  // ============================================================
-  // SHOPPING ACTIONS
-  // ============================================================
   document.getElementById('clearShoppingBtn').addEventListener('click', () => {
     const checkedItems = shoppingItems.filter(item => item.checked);
     if (checkedItems.length && confirm(`Clear ${checkedItems.length} checked items?`)) {
@@ -1158,9 +1101,6 @@
     }
   });
 
-  // ============================================================
-  // INSPIRATION TAB
-  // ============================================================
   function renderInspiration() {
     const downloaded = localStorage.getItem('cookbook_inspiration');
     
@@ -1207,7 +1147,6 @@
     inspirationContent.innerHTML = `<div class="inspiration-download"><h2>⏳ Downloading...</h2><p>Fetching recipes from around the world...</p></div>`;
     
     try {
-      // Fetch a variety of recipes from TheMealDB
       const categories = ['Seafood', 'Chicken', 'Beef', 'Pasta', 'Vegetarian', 'Dessert', 'Pork', 'Lamb'];
       const allRecipes = [];
       
@@ -1216,7 +1155,6 @@
           const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${cat}`);
           const data = await res.json();
           if (data.meals) {
-            // Take first 8 from each category
             data.meals.slice(0, 8).forEach(meal => {
               if (!allRecipes.some(r => r.idMeal === meal.idMeal)) {
                 allRecipes.push(meal);
@@ -1226,7 +1164,6 @@
         } catch (err) { console.error('Category error:', cat, err); }
       }
       
-      // Fetch full details for each recipe
       const fullRecipes = [];
       for (const meal of allRecipes) {
         try {
@@ -1248,7 +1185,6 @@
   }
 
   function parseMealDB(meal) {
-    // Extract ingredients
     const ingredients = [];
     for (let i = 1; i <= 20; i++) {
       const ing = meal['strIngredient' + i];
@@ -1259,7 +1195,6 @@
       }
     }
     
-    // Extract YouTube link
     let instructions = meal.strInstructions || '';
     if (meal.strYoutube) {
       instructions += `\n\n▶️ ${meal.strYoutube}`;
@@ -1306,7 +1241,6 @@
         btn.textContent = '⏳';
         
         try {
-          // Check if already imported
           const existing = recipes.find(r => r.name === recipe.name);
           if (existing) {
             showFlash('⚠️ Already in your cookbook', 'error');
@@ -1314,7 +1248,6 @@
             return;
           }
           
-          // Import to Firebase
           const recipeData = {
             name: recipe.name,
             ingredients: [...recipe.ingredients],
@@ -1353,9 +1286,6 @@
     renderInspirationList(filtered);
   }
 
-  // ============================================================
-  // TABS
-  // ============================================================
   function activateTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -1372,9 +1302,6 @@
     });
   });
 
-  // ============================================================
-  // SETTINGS
-  // ============================================================
   function applySettings() {
     const isDark = settings.theme === 'dark';
     const accent = settings.accentColor;
@@ -1402,14 +1329,6 @@
     });
     document.querySelector('.header').style.borderBottomColor = isDark ? '#2a2a2a' : '#e0d6cc';
     document.querySelector('.header h1').style.color = isDark ? '#eee' : '#222';
-    document.querySelectorAll('.tickable-ingredient').forEach(el => {
-      el.style.background = isDark ? '#222' : '#faf8f5';
-      el.style.borderColor = isDark ? '#2a2a2a' : '#e0d6cc';
-    });
-    document.querySelectorAll('.detail-instructions').forEach(el => {
-      el.style.background = isDark ? '#222' : '#faf8f5';
-      el.style.color = isDark ? '#ccc' : '#333';
-    });
   }
 
   document.querySelectorAll('.color-option').forEach(btn => {
@@ -1503,9 +1422,6 @@
     }
   });
 
-  // ============================================================
-  // INIT
-  // ============================================================
   applySettings();
   renderIngredientChips();
   
@@ -1516,7 +1432,7 @@
     if (el.dataset.font === settings.fontFamily) el.classList.add('active');
   });
 
-  console.log('⚔️ KBCB - Detail View + Inspiration loaded!');
+  console.log('⚔️ KBCB - All fixes applied!');
 </script>
 </body>
 </html>
